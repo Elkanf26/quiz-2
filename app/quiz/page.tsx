@@ -50,14 +50,13 @@ export default function QuizPage() {
       router.push("/");
       return;
     }
-    // Revenir à la question précédente en restaurant l'historique
-    const prevAnswerHistory = answerHistory.slice(0, -1);
-    const prevScoreHistory = scoreHistory.slice(0, -1);
-    setAnswerHistory(prevAnswerHistory);
-    setScoreHistory(prevScoreHistory);
-    setSelectedIndex(null);
+    const prevIndex = currentIndex - 1;
+    const previousAnswer = answerHistory[prevIndex]; // réponse donnée à la question précédente
+    setAnswerHistory((h) => h.slice(0, -1));
+    setScoreHistory((s) => s.slice(0, -1));
+    setSelectedIndex(previousAnswer ?? null); // re-affiche la réponse précédente
     setAnimKey((k) => k + 1);
-    setCurrentIndex((i) => i - 1);
+    setCurrentIndex(prevIndex);
   }
 
   return (
