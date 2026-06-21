@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
-import { syncToGHL } from "@/lib/ghl";
+
+function getLevelFromScore(score: number): string {
+  if (score <= 19) return "Observateur";
+  if (score <= 39) return "Curieux";
+  if (score <= 59) return "Explorateur";
+  if (score <= 79) return "Praticien";
+  return "Expert";
+}
 
 export async function POST(request: Request) {
   try {
@@ -10,27 +17,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "firstName and email are required" }, { status: 400 });
     }
 
-    const hasGHL = !!(process.env.GHL_API_KEY && process.env.GHL_LOCATION_ID);
-    console.log("[leads] GHL configured:", hasGHL);
-    console.log("[leads] payload:", { firstName, email, score });
+    const webhookUrl = "https://services.leadconnectorhq.com/hooks/lwMKLuJwcN8czGMON9QG/webhook-trigger/8d4c3158-1f30-4a6b-8849-aa83c7f9b532";
 
-    if (hasGHL) {
-      try {
-        const result = await syncToGHL({ firstName, lastName, email, company, phone, score });
-        console.log("[leads] GHL sync OK:", result);
-      } catch (ghlErr) {
-        console.error("[leads] GHL sync ERROR:", ghlErr);
-        // On ne bloque pas le lead même si GHL échoue
-      }
-    }
+    const level = getLevelFromScore(score);
 
-    if (process.env.WEBHOOK_URL) {
-      await fetch(process.env.WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, email, company, phone, score, submittedAt: new Date().toISOString() }),
-      });
-    }
+    await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        email,
+        phone,
+        company,
+        score,
+        niveau: level,
+        submittedAt: new Date().toISOString(),
+      }),
+    });
+    console.log("[leads] webhook GHL envoyé");
 
     return NextResponse.json({ ok: true });
   } catch (err) {
