@@ -7,18 +7,20 @@ import { getLevelByPercentage, levels, type Level } from "@/lib/questions";
 const LEADFLOW_URL = "https://leadflow.fr/bondecommande---";
 
 const features = [
-  { icon: "🤖", title: "IA intégrée", desc: "Génère des emails, SMS et contenus marketing en un clic grâce à l'IA directement dans l'outil." },
-  { icon: "📩", title: "Emails & SMS automatisés", desc: "Créez des séquences automatiques qui relancent, nurturent et convertissent vos prospects 24h/24." },
-  { icon: "🎯", title: "CRM tout-en-un", desc: "Gérez tous vos contacts, pipelines et opportunités depuis un seul tableau de bord." },
-  { icon: "🌐", title: "Pages de vente & funnels", desc: "Construisez vos tunnels de vente, pages de capture et sites web sans coder." },
-  { icon: "📅", title: "Calendrier & réservations", desc: "Permettez à vos prospects de booker directement un appel dans votre agenda." },
-  { icon: "📊", title: "Reporting & analytics", desc: "Suivez vos performances en temps réel et optimisez vos campagnes avec les bonnes données." },
+  { icon: "🤖", title: "IA conversationnelle", desc: "Automatisez vos conversations avec des agents IA qui répondent, qualifient et convertissent vos prospects à votre place, 24h/24." },
+  { icon: "📩", title: "Workflows automatisés", desc: "Créez des séquences email, SMS et appels qui se déclenchent automatiquement selon le comportement de vos contacts." },
+  { icon: "🎯", title: "CRM & pipeline de vente", desc: "Visualisez toutes vos opportunités, suivez chaque prospect et ne laissez plus jamais un lead tomber dans l'oubli." },
+  { icon: "🌐", title: "Funnels & sites web", desc: "Construisez vos tunnels de vente, pages de capture et sites complets avec un éditeur drag & drop, sans coder." },
+  { icon: "📅", title: "Prise de rendez-vous", desc: "Intégrez votre calendrier et laissez vos prospects booker directement un créneau — les rappels sont envoyés automatiquement." },
+  { icon: "⭐", title: "Réputation & avis clients", desc: "Collectez des avis Google automatiquement après chaque vente et gérez votre e-réputation depuis un seul endroit." },
+  { icon: "💬", title: "Messagerie unifiée", desc: "Centralisez tous vos messages (email, SMS, Instagram, Facebook, WhatsApp) dans une seule boîte de réception." },
+  { icon: "📊", title: "Reporting en temps réel", desc: "Tableaux de bord complets pour suivre vos campagnes, votre pipeline et votre chiffre d'affaires en un coup d'œil." },
 ];
 
 const testimonials = [
-  { name: "Sarah M.", role: "Coach business", text: "Leadflow a remplacé 6 outils différents. Je gagne 3h par jour et mes conversions ont augmenté de 40%.", avatar: "#2563eb" },
-  { name: "Thomas R.", role: "Agence marketing", text: "En 2 semaines j'avais automatisé tout mon suivi client. Le ROI était là dès le premier mois.", avatar: "#7c3aed" },
-  { name: "Julie L.", role: "Formatrice en ligne", text: "L'IA intégrée est bluffante. Je crée mes campagnes email en 10 minutes au lieu de 2 heures.", avatar: "#059669" },
+  { name: "Sarah M.", role: "Coach business", text: "Leadflow a remplacé ActiveCampaign, Calendly, Clickfunnels et mon CRM. J'économise plus de 400€/mois et tout est centralisé.", avatar: "#2563eb" },
+  { name: "Thomas R.", role: "Agence marketing", text: "Les workflows IA ont transformé mon business. Mes leads sont relancés automatiquement, je close 3x plus sans lever le petit doigt.", avatar: "#7c3aed" },
+  { name: "Julie L.", role: "Formatrice en ligne", text: "En 48h j'avais mon tunnel de vente, mon calendrier et mes séquences email en place. Un outil complet que je recommande à 100%.", avatar: "#059669" },
 ];
 
 const levelMessages: Record<string, { hook: string; urgency: string }> = {
@@ -146,9 +148,24 @@ export default function ResultPage() {
               Découvrez <span className="gradient-text">Leadflow</span>
             </h2>
             <p className="text-lg" style={{ color: "#64748b", lineHeight: 1.7 }}>
-              La plateforme tout-en-un propulsée par l&apos;IA pour automatiser votre marketing,
-              gérer vos clients et faire exploser vos ventes.
+              La plateforme tout-en-un qui remplace votre CRM, vos emails, vos tunnels de vente,
+              votre calendrier et vos agents IA — dans un seul outil.
             </p>
+          </div>
+
+          {/* Replace banner */}
+          <div className="rounded-2xl p-5 mb-8 text-center"
+            style={{ backgroundColor: "#f8fafc", border: "1.5px solid #e2e8f0" }}>
+            <p className="text-sm font-semibold mb-3" style={{ color: "#64748b" }}>Leadflow remplace tous ces outils :</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {["ActiveCampaign","Calendly","Clickfunnels","HubSpot","Typeform","ManyChat","Mailchimp","Stripe Pages"].map((tool) => (
+                <span key={tool} className="px-3 py-1 rounded-full text-xs font-medium line-through"
+                  style={{ backgroundColor: "#fee2e2", color: "#ef4444" }}>
+                  {tool}
+                </span>
+              ))}
+            </div>
+            <p className="text-sm font-bold mt-3" style={{ color: "#2563eb" }}>→ Un seul abonnement. Tout inclus.</p>
           </div>
 
           {/* Features grid */}

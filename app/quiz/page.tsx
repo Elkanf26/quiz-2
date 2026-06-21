@@ -10,8 +10,9 @@ export default function QuizPage() {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [scoreHistory, setScoreHistory] = useState<number[]>([]); // points par question
-  const [answerHistory, setAnswerHistory] = useState<number[]>([]); // index de réponse par question
+  const [locked, setLocked] = useState(false); // true = auto-avance en cours, false = peut changer
+  const [scoreHistory, setScoreHistory] = useState<number[]>([]);
+  const [answerHistory, setAnswerHistory] = useState<number[]>([]);
   const [animKey, setAnimKey] = useState(0);
 
   const question = questions[currentIndex];
@@ -23,6 +24,7 @@ export default function QuizPage() {
     const newScoreHistory = [...scoreHistory, points];
     const newAnswerHistory = [...answerHistory, idx];
 
+    setLocked(true);
     setTimeout(() => {
       if (isLast) {
         const total = newScoreHistory.reduce((a, b) => a + b, 0);
@@ -33,6 +35,7 @@ export default function QuizPage() {
         setScoreHistory(newScoreHistory);
         setAnswerHistory(newAnswerHistory);
         setSelectedIndex(null);
+        setLocked(false);
         setAnimKey((k) => k + 1);
         setCurrentIndex((i) => i + 1);
       }
@@ -40,7 +43,7 @@ export default function QuizPage() {
   }, [question, scoreHistory, answerHistory, isLast, router]);
 
   function handleSelect(idx: number) {
-    if (selectedIndex !== null) return;
+    if (locked) return;
     setSelectedIndex(idx);
     advance(idx);
   }
@@ -51,10 +54,11 @@ export default function QuizPage() {
       return;
     }
     const prevIndex = currentIndex - 1;
-    const previousAnswer = answerHistory[prevIndex]; // réponse donnée à la question précédente
+    const previousAnswer = answerHistory[prevIndex];
     setAnswerHistory((h) => h.slice(0, -1));
     setScoreHistory((s) => s.slice(0, -1));
-    setSelectedIndex(previousAnswer ?? null); // re-affiche la réponse précédente
+    setSelectedIndex(previousAnswer ?? null);
+    setLocked(false); // on peut changer la réponse
     setAnimKey((k) => k + 1);
     setCurrentIndex(prevIndex);
   }
@@ -110,13 +114,13 @@ export default function QuizPage() {
                 <button
                   key={i}
                   onClick={() => handleSelect(i)}
-                  disabled={selectedIndex !== null}
+                  disabled={locked}
                   className={`answer-btn text-left px-5 py-4 rounded-2xl text-sm font-medium ${isSelected ? "selected" : ""}`}
                   style={{
                     backgroundColor: isSelected ? "#2563eb" : isDimmed ? "#f8fafc" : "#f1f5f9",
                     border: `2px solid ${isSelected ? "#2563eb" : "#e2e8f0"}`,
                     color: isSelected ? "#fff" : isDimmed ? "#94a3b8" : "#1e293b",
-                    cursor: selectedIndex !== null ? "default" : "pointer",
+                    cursor: locked ? "default" : "pointer",
                     opacity: isDimmed ? 0.5 : 1,
                   }}
                 >
