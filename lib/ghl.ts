@@ -58,8 +58,6 @@ async function upsertContact(payload: LeadPayload, level: ReturnType<typeof getL
     companyName: payload.company,
     tags: ["quiz-ia", tag],
     source: "Quiz IA",
-    // Score dans les notes en fallback
-    notes: `Quiz IA — Score: ${payload.score}% — Niveau: ${level.name}`,
   };
 
   if (customFields.length > 0) body.customFields = customFields;
