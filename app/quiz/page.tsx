@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { questions, MAX_SCORE } from "@/lib/questions";
 
@@ -11,85 +11,113 @@ export default function QuizPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [totalScore, setTotalScore] = useState(0);
+  const [animKey, setAnimKey] = useState(0);
 
   const question = questions[currentIndex];
-  const progress = (currentIndex / questions.length) * 100;
+  const progress = ((currentIndex) / questions.length) * 100;
   const isLast = currentIndex + 1 === questions.length;
 
-  useEffect(() => {
-    setSelectedIndex(null);
-  }, [currentIndex]);
-
-  function handleNext() {
-    if (selectedIndex === null) return;
-    const points = question.answers[selectedIndex].points;
+  const advance = useCallback((idx: number) => {
+    const points = question.answers[idx].points;
     const newTotal = totalScore + points;
 
-    if (isLast) {
-      const pct = Math.round((newTotal / MAX_SCORE) * 100);
-      sessionStorage.setItem("quiz_score", String(pct));
-      router.push("/lead");
-    } else {
-      setTotalScore(newTotal);
-      setCurrentIndex((i) => i + 1);
-    }
+    setTimeout(() => {
+      if (isLast) {
+        const pct = Math.round((newTotal / MAX_SCORE) * 100);
+        sessionStorage.setItem("quiz_score", String(pct));
+        router.push("/lead");
+      } else {
+        setTotalScore(newTotal);
+        setSelectedIndex(null);
+        setAnimKey((k) => k + 1);
+        setCurrentIndex((i) => i + 1);
+      }
+    }, 480);
+  }, [question, totalScore, isLast, router]);
+
+  function handleSelect(idx: number) {
+    if (selectedIndex !== null) return;
+    setSelectedIndex(idx);
+    advance(idx);
   }
 
   return (
-    <main
-      className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
-      style={{ backgroundColor: "#0a0a0f" }}
-    >
-      <div className="w-full max-w-xl">
-        {/* Progress */}
-        <div className="mb-8">
-          <div className="flex justify-between text-sm mb-2" style={{ color: "#6b7280" }}>
-            <span>Question {currentIndex + 1} sur {questions.length}</span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <div className="w-full h-2 rounded-full" style={{ backgroundColor: "#1a1a2e" }}>
-            <div
-              className="h-2 rounded-full transition-all duration-500"
-              style={{ width: `${progress}%`, backgroundColor: "#7c3aed" }}
-            />
-          </div>
+    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12" style={{ backgroundColor: "#f8fafc" }}>
+
+      {/* Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div style={{
+          position: "absolute", top: "-5%", right: "0",
+          width: 400, height: 400, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%)",
+        }} />
+      </div>
+
+      <div className="relative w-full max-w-xl">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <button onClick={() => router.push("/")} className="text-sm flex items-center gap-1 transition-colors hover:opacity-70" style={{ color: "#94a3b8" }}>
+            ← Retour
+          </button>
+          <span className="text-sm font-medium" style={{ color: "#64748b" }}>
+            {currentIndex + 1} / {questions.length}
+          </span>
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full h-1.5 rounded-full mb-8 overflow-hidden" style={{ backgroundColor: "#e2e8f0" }}>
+          <div
+            className="h-1.5 rounded-full progress-fill"
+            style={{ width: `${progress}%`, background: "linear-gradient(90deg, #2563eb, #0ea5e9)" }}
+          />
         </div>
 
         {/* Question card */}
         <div
-          key={currentIndex}
-          className="rounded-2xl p-8 mb-6 animate-fade-in"
-          style={{ backgroundColor: "#0f0f1a", border: "1px solid #1e1e3f" }}
+          key={animKey}
+          className="bg-white rounded-3xl p-8 mb-4 slide-in card-shadow"
         >
-          <h2 className="text-xl font-semibold mb-6 leading-snug" style={{ color: "#f1f0f5" }}>
+          {/* Question number chip */}
+          <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold mb-5"
+            style={{ backgroundColor: "#eff6ff", color: "#2563eb" }}>
+            Question {currentIndex + 1}
+          </div>
+
+          <h2 className="text-xl font-bold mb-7 leading-snug" style={{ color: "#0f172a", lineHeight: 1.5 }}>
             {question.text}
           </h2>
 
           <div className="flex flex-col gap-3">
             {question.answers.map((answer, i) => {
               const isSelected = selectedIndex === i;
+              const isDimmed = selectedIndex !== null && !isSelected;
+
               return (
                 <button
                   key={i}
-                  onClick={() => setSelectedIndex(i)}
-                  className="text-left px-5 py-4 rounded-xl text-sm font-medium transition-all duration-200"
+                  onClick={() => handleSelect(i)}
+                  disabled={selectedIndex !== null}
+                  className={`answer-btn text-left px-5 py-4 rounded-2xl text-sm font-medium ${isSelected ? "selected" : ""}`}
                   style={{
-                    backgroundColor: isSelected ? "#1a0a3a" : "#1a1a2e",
-                    border: `1px solid ${isSelected ? "#7c3aed" : "#2d2d50"}`,
-                    color: "#d1d5db",
+                    backgroundColor: isSelected ? "#2563eb" : isDimmed ? "#f8fafc" : "#f1f5f9",
+                    border: `2px solid ${isSelected ? "#2563eb" : isDimmed ? "#e2e8f0" : "#e2e8f0"}`,
+                    color: isSelected ? "#fff" : isDimmed ? "#94a3b8" : "#1e293b",
+                    cursor: selectedIndex !== null ? "default" : "pointer",
+                    opacity: isDimmed ? 0.5 : 1,
                   }}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-center gap-3">
                     <span
-                      className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                      className="flex-shrink-0 w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold"
                       style={{
-                        backgroundColor: isSelected ? "#7c3aed" : "#1e1e3f",
-                        color: isSelected ? "#fff" : "#9ca3af",
+                        backgroundColor: isSelected ? "rgba(255,255,255,0.25)" : "#e2e8f0",
+                        color: isSelected ? "#fff" : "#64748b",
                       }}
                     >
-                      {LETTERS[i]}
+                      {isSelected ? "✓" : LETTERS[i]}
                     </span>
-                    <span className="pt-0.5">{answer.label}</span>
+                    <span>{answer.label}</span>
                   </div>
                 </button>
               );
@@ -97,14 +125,10 @@ export default function QuizPage() {
           </div>
         </div>
 
-        <button
-          onClick={handleNext}
-          disabled={selectedIndex === null}
-          className="w-full py-4 rounded-xl font-semibold text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95"
-          style={{ backgroundColor: "#7c3aed" }}
-        >
-          {isLast ? "Voir mon résultat →" : "Question suivante →"}
-        </button>
+        {/* Hint */}
+        <p className="text-center text-xs" style={{ color: "#94a3b8" }}>
+          Sélectionnez une réponse pour continuer
+        </p>
       </div>
     </main>
   );
